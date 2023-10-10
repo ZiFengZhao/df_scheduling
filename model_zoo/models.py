@@ -11,17 +11,18 @@ def convert2onnx(model_name, model_dict, input_tensor):
     new_model = model_name + '.onnx'
     with torch.no_grad():
         torch.onnx.export(model, input_tensor, new_model)
+    # print("Export {}.".format(new_model))
 
     return new_model
 
 
-def get_input_tensor(model_name: str):
-    print('Generating {}\'s input tensor:'.format(model_name))
+def get_input_tensor(model_name: str, device='cpu'):
+    print('Generating {}\'s input tensor'.format(model_name))
     if model_name == 'resnet50':
         tensor_size = [1, 3, 224, 224]
-        x = torch.randn(tensor_size)
+        x = torch.randn(tensor_size, device=device)
     else:
-        raise RuntimeError("Unsupported model!")
+        raise ValueError("Unsupported model!")
 
     return x
 
@@ -36,10 +37,13 @@ def main():
         input_tensor_dict[n] = input_tensor
 
     onnx_model_dict = {}
-    for name, model in model_dict:
+    for name in model_dict:
         onnx_model = convert2onnx(name, model_dict, input_tensor_dict[name])
         onnx_model_dict[name] = onnx_model
 
+    for name in model_dict:
+        print("Generated onnx model: {}".format(name))
 
-if '__name__' == 'main()':
+
+if __name__ == '__main__':
     main()
